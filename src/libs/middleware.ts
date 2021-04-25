@@ -3,10 +3,11 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 import { formatJSONResponse } from './apiGateway';
 import { AppError } from './appError';
+import MiddlewareFunction = middy.MiddlewareFunction;
 
 export const apiGatewayResponseMiddleware = (options: { enableErrorLogger?: boolean } = {}) => {
 
-  const after: middy.MiddlewareFunction<APIGatewayProxyEvent, any> = async (request) => {
+  const after: MiddlewareFunction<APIGatewayProxyEvent, any> = async (request) => {
     if (!request.event?.httpMethod || request.response === undefined || request.response === null) {
       return;
     }
@@ -23,15 +24,16 @@ export const apiGatewayResponseMiddleware = (options: { enableErrorLogger?: bool
     request.response = formatJSONResponse(request.response);
   }
 
-  const onError: middy.MiddlewareFunction<APIGatewayProxyEvent, APIGatewayProxyResult> = async (request) => {
+  const onError: MiddlewareFunction<APIGatewayProxyEvent, APIGatewayProxyResult> = async (request) => {
     const { error } = request;
     let statusCode = 500;
 
     if (error instanceof AppError) {
       statusCode = error.statusCode;
-      if (options.enableErrorLogger) {
-        console.error(error);
-      }
+    }
+
+    if (options.enableErrorLogger) {
+      console.error(error);
     }
 
     request.response = formatJSONResponse({ message: error.message }, statusCode);

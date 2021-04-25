@@ -10,16 +10,16 @@ describe('hello', () => {
   let mockedMiddyfy: jest.MockedFunction<typeof middyfy>;
 
   beforeEach(async () => {
-    try {
-      mockedMiddyfy = mocked(middyfy);
-      mockedMiddyfy.mockImplementation((handler: Handler) => {
-        return handler as never;
-      });
-    } catch(err) {
-      console.log(err);
-    }
+    mockedMiddyfy = mocked(middyfy);
+    mockedMiddyfy.mockImplementation((handler: Handler) => {
+      return handler as never;
+    });
 
     main = (await import('./handler')).main;
+  });
+
+  afterEach(() => {
+    jest.resetModules();
   });
 
   it('should return hello object', async () => {
